@@ -217,47 +217,40 @@ void bfscorrecto(Camino *l, Camino *padres,int x, int y,int fila, int columna,in
 }
 
 void bfs(Camino *explorar,Camino *explorado, int rx, int ry,int fila, int columna, int matriz[fila][columna],bool *meta_encontrada){
-    if (*meta_encontrada) return;
-    if (explorar->usados==0) return;
-
+    if (*meta_encontrada) return;// verificamos que se llegó al final
+    if (explorar->usados==0) return;//verificamos si es un callejon sin salida
+    //obtenemos los hijos disponibles
     movimiento_disponible(explorar,explorado,rx,ry,fila,columna,matriz);
-
+    //revisamos cada hijo devuelto
     for (int i=0; i<explorar->usados;i++){
+        //guardamos todos los caminos del mismo nivel
         agregarpos(explorado,explorar->datos[i].x,explorar->datos[i].y);
         int x=explorar->datos[i].x;
         int y=explorar->datos[i].y;
+        //verificamos que ya hayamos llegado a la meta para terminar la ejecucion
         if(meta_lograda(x,y,fila,columna)){
             *meta_encontrada=true;
                 return;
         }
     }
-    bfs(explorar,explorado,rx,ry,fila,columna,matriz,meta_encontrada);
+    bfs(explorar,explorado,rx,ry,fila,columna,matriz,meta_encontrada);//volvemos a enviar los datos
 
 }
 
 void encontrar_camino(Camino *camino,Camino *correcto,int ux, int uy,int rx,int ry,int fila,int columna,int matriz[fila][columna],bool *meta_encontrada){
-    if (*meta_encontrada) return;  
+    if (*meta_encontrada) return;  //revisar si la meta ya fue encontrada
+    //movimientos anteriores
     int ox=rx;
     int oy=ry;
-    int anterior[1][1];
-    int movimiento[4][2]={
-        {0,-1},
-        {-1,0},
-        {0,1},
-        {1,0}
-    };
-    printf("posicion actual: %d,%d\n",rx ,ry);
-    int mov_disponibles[4][2], filas_usadas=0;
+    int movimiento[4][2]={{0,-1},{-1,0},{0,1},{1,0}};//movimientos posibles
     for (int i=0; i<4; i++){
-        int dx=movimiento[i][0];
-        int dy=movimiento[i][1];
-        int nx=rx+dx;
-        int ny=ry+dy;
+        int dx=movimiento[i][0], dy=movimiento[i][1];//direciones
+        int nx=rx+dx,ny=ry+dy;//nuevas direcciones
         //verificar movimientos disponibles
         int iguales=igual_anterior(ux,uy,nx,ny);
         if (nx>=0 && nx<fila && ny>=0 && ny<columna && matriz[nx][ny]!=1 && iguales==1){
-            agregarpos(camino,nx,ny);
-            agregarpos(correcto,nx,ny);
+            agregarpos(camino,nx,ny);//agregamos el camino recorrido
+            agregarpos(correcto,nx,ny);//agregamos el camino correcto
             if (meta_lograda(nx,ny,fila,columna)){
                 // generar_laberinto(nx,ny,fila,columna,matriz);
                 *meta_encontrada=true;
@@ -276,12 +269,6 @@ void clonar_matriz(int fila, int columna, int matriz[fila][columna], int matriz_
         for(int j=0; j<columna; j++){
             matriz_copia[i][j]=matriz[i][j];
         }
-    }
-    for (int i=0; i<fila; i++){
-        for(int j=0; j<columna; j++){
-            printf("%d", matriz_copia[i][j]);
-        }
-        printf("\n");
     }
 }
 int main(){
@@ -341,8 +328,9 @@ int main(){
         printf("2) BFS (Breadth-First Search)\n");
         scanf("%d",&busqueda);
         if(busqueda==1){
-            printf("entramos");
+            clock_t inicio=clock();
             encontrar_camino(&camino,&correcto,ux,uy,1,1,fila,columna,matriz,&meta_encontrada);
+            clock_t fin=clock();
             for (int i=0; i<camino.usados;i++){
                 int x=camino.datos[i].x;
                 int y=camino.datos[i].y;
@@ -351,9 +339,10 @@ int main(){
                 system("cls");
                 generar_laberinto(fila,columna,matriz);
             }
-
+            double tiempo_ejecucion = ((double)(fin - inicio)) / CLOCKS_PER_SEC;
+            printf("tardo %f estos segundos en recorrer\n", tiempo_ejecucion);
             char validardfs;
-            printf("desea ver el resultado y/n");
+            printf("desea ver el resultado y/n: ");
             scanf(" %c",&validardfs);
             if (validardfs=='y'){
                 for (int i=0;i<correcto.usados;i++){
@@ -368,7 +357,10 @@ int main(){
             }
         }else if(busqueda==2){
             // Reiniciar estructuras de camino
+            clock_t inicio=clock();
             bfs(&explorar,&explorado,1,1,fila,columna,matriz,&meta_encontrada);
+            clock_t fin=clock();
+
             for (int i=0;i<explorado.usados;i++){
                 int x=explorado.datos[i].x;
                 int y=explorado.datos[i].y;
@@ -380,6 +372,8 @@ int main(){
             }
             explorado.usados=0;
             char validar;
+            double tiempo_ejecucion = ((double)(fin - inicio)) / CLOCKS_PER_SEC;
+            printf("tardo %f estos segundos en recorrer\n", tiempo_ejecucion);
             printf("desea ver el resultado y/n");
             scanf(" %c",&validar);
             meta_encontrada = false;
